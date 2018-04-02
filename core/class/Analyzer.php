@@ -32,13 +32,25 @@ class Analyzer
         $result = [];
         $page = 1;
 
-        while(!isset($result['result'])) {
+        while(!isset($result['result']) || !isset($result['error'])) {
             if (!$logId) {
                 return false;
             }
 
             $xml = $this->getXMLData($logId, $page);
-            $xmlData = new \SimpleXMLElement($xml);
+            if (!$xml) {
+                $result['error'] = 'Не удалось загрузить данные боя';
+
+                return $result;
+            } else {
+                $xmlData = new \SimpleXMLElement($xml);
+                $error = $xmlData->xpath('//error');
+                if (count($error)) {
+                    $result['error'] = 'Не удалось загрузить данные боя';
+
+                    return $result;
+                }
+            }
 
             foreach (($xmlData->xpath('//log')) as $log) {
                 $hero = explode(';', $log['p1'])[0];
@@ -111,12 +123,14 @@ class Analyzer
             $battleResult = $xmlData->xpath('//results');
             if ($battleResult) {
                 $result['result'] = $battleResult;
+
+                return $result;
             }
 
             $page++;
         }
 
-        return $result;
+        return false;
     }
 
     public function debugLogs($logId)

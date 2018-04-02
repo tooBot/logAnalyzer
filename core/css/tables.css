@@ -50,3 +50,7 @@ th:first-child, td:first-child {
     border: 1px double black;
     padding: 5px;
 }
+
+.error {
+    color: red;
+}
